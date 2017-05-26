@@ -40,10 +40,10 @@ if ($hassiteconfig) {
         new lang_string('ws_username', 'local_evento'), '', '', PARAM_TEXT));
 
     // admin_setting_configpasswordunmask
-    $settings->add(new admin_setting_configtext('local_evento/wspassword',
+    $settings->add(new admin_setting_configpasswordunmask('local_evento/wspassword',
         new lang_string('ws_password', 'local_evento'), '', '', PARAM_TEXT));
 
     $settings->add(new admin_setting_configtext('local_evento/wstrace',
-        new lang_string('ws_trace', 'local_evento'), '', 0, PARAM_INT));
+        new lang_string('ws_trace', 'local_evento'), new lang_string('ws_trace_desc', 'local_evento'), 0, PARAM_INT));
 
 }

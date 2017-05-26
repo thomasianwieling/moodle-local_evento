@@ -29,3 +29,4 @@ $string['ws_uri'] = 'URI';
 $string['ws_username'] = 'Username';
 $string['ws_password'] = 'Password';
 $string['ws_trace'] = 'Soap tracing';
+$string['ws_trace_desc'] = 'Soap tracing for debugging. Enter 1 to enable and 0 to disable.';

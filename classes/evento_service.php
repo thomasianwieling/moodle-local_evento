@@ -107,7 +107,7 @@ class local_evento_evento_service {
         $request['theEventoPersonFilter']['idPerson'] = $personid;
         // to limit the response size if something went wrong
         $request['theLimitationFilter2']['theMaxResultsValue'] = 10;
-        $result = $soap->listEventoPerson($request);
+        $result = $this->client->listEventoPerson($request);
         return $result->return;
     }
 
