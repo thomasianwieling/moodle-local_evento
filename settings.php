@@ -31,7 +31,10 @@ if ($hassiteconfig) {
     // General Settings.
     $settings->add(new admin_setting_heading('local_evento_settings', '', get_string('pluginname_desc', 'local_evento')));
     $settings->add(new admin_setting_configtext('local_evento/wslocation',
-        new lang_string('ws_location', 'local_evento'), '', '', PARAM_URL));
+        new lang_string('ws_location', 'local_evento'), '', 'https://ws.fh-htwchur.ch/eventowsblc/services/EventoWebservice', PARAM_URL));
+
+    $settings->add(new admin_setting_configtext('local_evento/wswsdlfilename',
+        new lang_string('ws_wsdlfilename', 'local_evento'), '', 'evento_webservice_v1_1.wsdl', PARAM_TEXT));
 
     $settings->add(new admin_setting_configtext('local_evento/wsuri',
         new lang_string('ws_uri', 'local_evento'), '', '', PARAM_TEXT));
@@ -45,5 +48,11 @@ if ($hassiteconfig) {
 
     $settings->add(new admin_setting_configtext('local_evento/wstrace',
         new lang_string('ws_trace', 'local_evento'), new lang_string('ws_trace_desc', 'local_evento'), 0, PARAM_INT));
+
+    $settings->add(new admin_setting_configtext('local_evento/adsidprefix',
+        new lang_string('ad_sidprefix', 'local_evento'), new lang_string('ad_sidprefix_desc', 'local_evento'), 'S-1-5-21-', PARAM_TEXT));
+
+    $settings->add(new admin_setting_configtext('local_evento/adshibbolethsuffix',
+        new lang_string('ad_shibbolethsuffix', 'local_evento'), '', '@fh-htwchur.ch', PARAM_TEXT));
 
 }

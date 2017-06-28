@@ -25,6 +25,9 @@ defined('MOODLE_INTERNAL') || die();
  */
 
 class local_evento_evento_service {
+    // Plugin configuration.
+    private $config;
+    private $client;
     /**
      * Initialize the service keeping reference to the soap-client
      *
@@ -32,25 +35,23 @@ class local_evento_evento_service {
      */
     public function __construct($client = null) {
         global $CFG;
-        $this->client = $client;
 
-        $config = get_config('local_evento');
+        $this->config = get_config('local_evento');
 
-        // todo move to config setting
         $options = array(
-            'location' => $config->wslocation,
-            'uri' => $config->wsuri,
-            'trace' => $config->wstrace,
-            'login' => $config->wsusername,
-            'password' => $config->wspassword
+            'location' => $this->config->wslocation,
+            'uri' => $this->config->wsuri,
+            'trace' => $this->config->wstrace,
+            'login' => $this->config->wsusername,
+            'password' => $this->config->wspassword
             // 'soap_version' => SOAP_1_2
         );
-        // todo move to settings
-        $wsdlfilename = 'evento_webservice_v1.wsdl';
-        $wsdl = $CFG->dirroot . "/local/evento/wsdl/" . $wsdlfilename;
+        $wsdl = $CFG->dirroot . "/local/evento/wsdl/" . $this->config->wswsdlfilename;
 
         if (!isset($client)) {
             $this->client = new SoapClient($wsdl, $options);
+        } else {
+            $this->client = $client;
         }
     }
 
@@ -62,7 +63,7 @@ class local_evento_evento_service {
         try {
             $request['theEventoAnlassTypFilter']['idAnlassTyp'] = 1;
             $result = $this->client->listEventoAnlassTyp($request);
-            return isset($result->return);
+            return array_key_exists("return", $result) ? true : null;
         } catch (Exception $ex) {
             debugging($ex->message);
             return false;
@@ -75,12 +76,13 @@ class local_evento_evento_service {
      * @return stdClass event object "EventoAnlass" definied in the wsdl
      */
     public function get_event_by_number($number) {
-        // set request filter
+        // Set request filter.
         $request['theEventoAnlassFilter']['anlassNummer'] = $number;
-        // to limit the response size if something went wrong
+        // To limit the response size if something went wrong.
         $request['theLimitationFilter2']['theMaxResultsValue'] = 10;
         $result = $this->client->listEventoAnlass($request);
-        return $result->return;
+
+        return array_key_exists("return", $result) ? $result->return : null;
     }
 
     /**
@@ -89,12 +91,13 @@ class local_evento_evento_service {
      * @return array of stdClass event object "EventoPersonenAnmeldung" definied in the wsdl
      */
     public function get_enrolments_by_eventid($eventid) {
-        // set request filter
+        // Set request filter.
         $request['theEventoPersonenAnmeldungFilter']['idAnlass'] = $eventid;
-        // to limit the response size if something went wrong
+        // To limit the response size if something went wrong.
         $request['theLimitationFilter2']['theMaxResultsValue'] = 1000;
         $result = $this->client->listEventoPersonenAnmeldung($request);
-        return $result->return;
+
+        return array_key_exists("return", $result) ? $result->return : null;
     }
 
     /**
@@ -103,12 +106,68 @@ class local_evento_evento_service {
      * @return stdClass person object "EventoPerson" definied in the wsdl
      */
     public function get_person_by_id($personid) {
-        // set request filter
+        // Set request filter.
         $request['theEventoPersonFilter']['idPerson'] = $personid;
-        // to limit the response size if something went wrong
+        // To limit the response size if something went wrong.
         $request['theLimitationFilter2']['theMaxResultsValue'] = 10;
         $result = $this->client->listEventoPerson($request);
-        return $result->return;
+
+        return array_key_exists("return", $result) ? $result->return : null;
+    }
+
+    /**
+     * Obtains the Active Directory accountdetails
+     *
+     * @param string $personid the evento eventid
+     * @param bool $isactive true to get only active accounts; default null.
+     * @param bool $isstudent true if you like to get students; default null.
+     * @return stdClass person object "EventoPerson" definied in the wsdl
+     */
+    public function get_ad_accounts_by_evento_personid($personid, $isactive = null, $isstudent=null) {
+        // Set request filter.
+        $request['theADAccount']['idPerson'] = $personid;
+        // To limit the response size if something went wrong.
+        $request['theEventoLimitatinFilter1']['theMaxResultsValue'] = 10;
+        $result = $this->client->listAdAccount($request);
+        // Filter result.
+        if (array_key_exists("return", $result) && is_array($result->return)) {
+            if (!empty($isactive)) {
+                $result->return = array_filter($result->return,
+                                    function ($var) {
+                                        return($var->accountStatusDisabled == '0');
+                                    }
+                );
+            }
+            if (!empty($isstudent)) {
+                $result->return = array_filter($result->return,
+                                    function ($var) {
+                                        return ($var->isStudentAccount == '1');
+                                    }
+                );
+            }
+        }
+
+        return array_key_exists("return", $result) ? $result->return : null;
+    }
+
+    /**
+     * Converts an AD SID to a shibboleth Id
+     *
+     * @param string $sid sid of the user from the Active Directory
+     * @return string shibboleth id
+     */
+    public function sid_to_shibbolethid($sid) {
+        return trim(str_replace($this->config->adsidprefix, "", $sid) . $this->config->adshibbolethsuffix);
+    }
+
+    /**
+     * Converts a shibboleth ID to an Active Directory SID
+     *
+     * @param string $sishibbolethid shibbolethid of the user
+     * @return string sid from the Active Directory
+     */
+    public function shibbolethid_to_sid($shibbolethid) {
+        return trim($this->config->adsidprefix . str_replace($this->config->adshibbolethsuffix, "", $shibbolethid));
     }
 
 }

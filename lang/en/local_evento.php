@@ -22,10 +22,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['ad_sidprefix'] = 'Prefix of the AD sid';
+$string['ad_sidprefix_desc'] = 'Prefix of the AD sid which is not part of the shibboleth ID';
+$string['ad_shibbolethsuffix'] = 'Suffix of the shibboleth ID';
 $string['pluginname'] = 'Evento integration';
 $string['pluginname_desc'] = 'This plugin provides the access to the evento SOAP webservice';
 $string['ws_location'] = 'Location';
 $string['ws_uri'] = 'URI';
+$string['ws_wsdlfilename'] = 'WSDL filename';
 $string['ws_username'] = 'Username';
 $string['ws_password'] = 'Password';
 $string['ws_trace'] = 'Soap tracing';

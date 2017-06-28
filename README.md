@@ -1,6 +1,6 @@
 # Evento
 
-This plugin provides the access to the evento SOAP webservice.
+This plugin provides the access to the Evento SOAP webservice.
 
 ## License
 
