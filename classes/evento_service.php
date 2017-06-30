@@ -61,11 +61,17 @@ class local_evento_evento_service {
      */
     public function init_call() {
         try {
-            $request['theEventoAnlassTypFilter']['idAnlassTyp'] = 1;
+            $request['theLimitationFilter2']['theMaxResultsValue'] = 10;
             $result = $this->client->listEventoAnlassTyp($request);
             return array_key_exists("return", $result) ? true : null;
+        } catch (SoapFault $fault) {
+            debugging("Error, the init webservice call to evento failed: ". $fault->__toString());
+            return false;
         } catch (Exception $ex) {
-            debugging($ex->message);
+            debugging("Error, the init webservice call to evento failed: {$ex->message}");
+            return false;
+        } catch (Throwable $ex) {
+            debugging("Error, the init webservice call to evento failed: {$ex->message}");
             return false;
         }
     }
@@ -151,6 +157,107 @@ class local_evento_evento_service {
     }
 
     /**
+     * Obtains the Active Directory accountdetails of students
+     *
+     * @param bool $isactive true to get only active accounts; default null to get all.
+     * @return array of stdClass person object "EventoPerson" definied in the wsdl
+     */
+    public function get_student_ad_accounts($isactive = null) {
+        // Set request filter.
+        $request['theADAccount']['isStudentAccount'] = 1;
+        // To limit the response size if something went wrong.
+        $request['theEventoLimitatinFilter1']['theMaxResultsValue'] = 30000;
+        $result = $this->client->listAdAccount($request);
+        // Filter result.
+        if (array_key_exists("return", $result) && is_array($result->return)) {
+            if (!empty($isactive)) {
+                $result->return = array_filter($result->return,
+                                    function ($var) {
+                                        return($var->accountStatusDisabled == '0');
+                                    }
+                );
+            }
+        }
+
+        return array_key_exists("return", $result) ? $result->return : null;
+    }
+
+    /**
+     * Obtains the Active Directory accountdetails of lecturers
+     *
+     * @param bool $isactive true to get only active accounts; default null to get all.
+     * @return array of stdClass person object "EventoPerson" definied in the wsdl
+     */
+    public function get_lecturer_ad_accounts($isactive = null) {
+        // Set request filter.
+        $request['theADAccount']['isLecturerAccount'] = 1;
+        // To limit the response size if something went wrong.
+        $request['theEventoLimitatinFilter1']['theMaxResultsValue'] = 30000;
+        $result = $this->client->listAdAccount($request);
+        // Filter result.
+        if (array_key_exists("return", $result) && is_array($result->return)) {
+            if (!empty($isactive)) {
+                $result->return = array_filter($result->return,
+                                    function ($var) {
+                                        return($var->accountStatusDisabled == '0');
+                                    }
+                );
+            }
+        }
+
+        return array_key_exists("return", $result) ? $result->return : null;
+    }
+
+    /**
+     * Obtains the Active Directory accountdetails of employees
+     *
+     * @param bool $isactive true to get only active accounts; default null to get all.
+     * @return array of stdClass person object "EventoPerson" definied in the wsdl
+     */
+    public function get_employee_ad_accounts($isactive = null) {
+        // Set request filter.
+        $request['theADAccount']['isEmployeeAccount'] = 1;
+        // To limit the response size if something went wrong.
+        $request['theEventoLimitatinFilter1']['theMaxResultsValue'] = 30000;
+        $result = $this->client->listAdAccount($request);
+        // Filter result.
+        if (array_key_exists("return", $result) && is_array($result->return)) {
+            if (!empty($isactive)) {
+                $result->return = array_filter($result->return,
+                                    function ($var) {
+                                        return($var->accountStatusDisabled == '0');
+                                    }
+                );
+            }
+        }
+
+        return array_key_exists("return", $result) ? $result->return : null;
+    }
+
+    /**
+     * Obtains all the Active Directory accountdetails
+     * of employees, lecturers, students
+     *
+     * @param bool $isactive true to get only active accounts; default null to get all.
+     * @return array of stdClass person object "EventoPerson" definied in the wsdl
+     */
+    public function get_all_ad_accounts($isactive = null) {
+        // Set request filter.
+        $result = array();
+        $employees = to_array($this->get_employee_ad_accounts($isactive));
+        $lecturers = to_array($this->get_lecturer_ad_accounts($isactive));
+        $students = to_array($this->get_student_ad_accounts($isactive));
+        if (isset($employees) && isset($lecturers)) {
+            $result = array_merge($employees, $lecturers);
+        }
+        if (isset($students)) {
+            $result = array_merge($students, $result);
+        }
+
+        return $result;
+    }
+
+    /**
      * Converts an AD SID to a shibboleth Id
      *
      * @param string $sid sid of the user from the Active Directory
@@ -168,6 +275,22 @@ class local_evento_evento_service {
      */
     public function shibbolethid_to_sid($shibbolethid) {
         return trim($this->config->adsidprefix . str_replace($this->config->adshibbolethsuffix, "", $shibbolethid));
+    }
+
+    /**
+     * Create an array if the value is not already one.
+     *
+     * @param var $value
+     * @return array of the $value
+     */
+    private function to_array($value) {
+        $returnarray = array();
+        if (is_array($value)) {
+            $returnarray = $value;
+        } else if (!is_null($value)) {
+            $returnarray[0] = $value;
+        }
+        return $returnarray;
     }
 
 }
