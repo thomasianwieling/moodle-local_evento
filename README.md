@@ -1,6 +1,16 @@
 # Evento
-
 This plugin provides the access to the Evento SOAP webservice.
+
+# Installation an Configuration
+The plugin need the following settings:
+
+* Location: The Webservcie URL of Evento
+* WSDL-filename: Filename of the right wsdl-definition.
+* URI: URI namespace (http://service.webservice.htwchur.ch)
+* username: username of the basic authentification
+* password: password of the basic authentification
+* AD SID: SID prefix, which is not part of the shibboleth ID
+* shibboleth ID suffix: Suffix to create the shibboleth ID 
 
 ## License
 
