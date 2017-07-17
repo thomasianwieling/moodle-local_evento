@@ -15,6 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 defined('MOODLE_INTERNAL') || die();
+/**
+ * DateTime format of the evento xml dateTime types
+ */
+define('LOCAL_EVENTO_DATETIME_FORMAT', "Y-m-d\TH:i:s.uP");
 
 /**
  * Class definition for the evento webservice call
@@ -28,6 +32,7 @@ class local_evento_evento_service {
     // Plugin configuration.
     private $config;
     private $client;
+
     /**
      * Initialize the service keeping reference to the soap-client
      *
@@ -85,7 +90,26 @@ class local_evento_evento_service {
         // Set request filter.
         $request['theEventoAnlassFilter']['anlassNummer'] = $number;
         // To limit the response size if something went wrong.
-        $request['theLimitationFilter2']['theMaxResultsValue'] = 10;
+        $request['theLimitationFilter2']['theMaxResultsValue'] = 10000;
+        $result = $this->client->listEventoAnlass($request);
+
+        return array_key_exists("return", $result) ? $result->return : null;
+    }
+
+    /**
+     * Obtains events by filters
+     * @param local_evento_eventoanlassfilter $eventoanlassfilter the evento event-number like "mod.bspEA2.HS16_BS.001"
+     * @param local_evento_limitationfilter2 $limitationfilter2 filter for response limitation
+     * @return stdClass event object "EventoAnlass" definied in the wsdl
+     */
+    public function get_events_by_filter(local_evento_eventoanlassfilter $eventoanlassfilter, local_evento_limitationfilter2 $limitationfilter2) {
+        // Set request filter.
+        !empty($eventoanlassfilter->anlassnummer) ? $request['theEventoAnlassFilter']['anlassNummer'] = $eventoanlassfilter->anlassnummer : null;
+        !empty($eventoanlassfilter->idanlasstyp) ? $request['theEventoAnlassFilter']['idAnlassTyp'] = $eventoanlassfilter->idanlasstyp : null;
+        // To limit the response size if something went wrong.
+        !empty($limitationfilter2->themaxresultvalue) ? $request['theLimitationFilter2']['theMaxResultsValue'] = $limitationfilter2->themaxresultvalue : null;
+        !empty($limitationfilter2->thefromdate) ? $request['theLimitationFilter2']['theFromDate'] = $limitationfilter2->thefromdate : null;
+        !empty($limitationfilter2->thetodate) ? $request['theLimitationFilter2']['theToDate'] = $limitationfilter2->thetodate : null;
         $result = $this->client->listEventoAnlass($request);
 
         return array_key_exists("return", $result) ? $result->return : null;
@@ -244,9 +268,9 @@ class local_evento_evento_service {
     public function get_all_ad_accounts($isactive = null) {
         // Set request filter.
         $result = array();
-        $employees = to_array($this->get_employee_ad_accounts($isactive));
-        $lecturers = to_array($this->get_lecturer_ad_accounts($isactive));
-        $students = to_array($this->get_student_ad_accounts($isactive));
+        $employees = self::to_array($this->get_employee_ad_accounts($isactive));
+        $lecturers = self::to_array($this->get_lecturer_ad_accounts($isactive));
+        $students = self::to_array($this->get_student_ad_accounts($isactive));
         if (isset($employees) && isset($lecturers)) {
             $result = array_merge($employees, $lecturers);
         }
@@ -283,7 +307,7 @@ class local_evento_evento_service {
      * @param var $value
      * @return array of the $value
      */
-    private function to_array($value) {
+    public static function to_array($value) {
         $returnarray = array();
         if (is_array($value)) {
             $returnarray = $value;
@@ -293,4 +317,45 @@ class local_evento_evento_service {
         return $returnarray;
     }
 
+}
+
+/**
+ * Class definition for filtering the listEventoAnlass
+ *
+ * @package    local_evento
+ * @copyright  2017 HTW Chur Roger Barras
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class local_evento_eventoanlassfilter {
+    /** @var string */
+    public $anlassnummer = null;
+    /** @var int */
+    public $idanlasstyp = null;
+}
+
+/**
+ * Class definition for limiting the response
+ *
+ * @package    local_evento
+ * @copyright  2017 HTW Chur Roger Barras
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class local_evento_limitationfilter2 {
+    /** @var string */
+    public $thefromdate = null;
+    /** @var string */
+    public $thetodate = null;
+    /** @var int */
+    public $themaxresultvalue = null;
+}
+
+/**
+ * Enumeration of "idAnlassTyp"
+ *
+ * @package    local_evento
+ * @copyright  2017 HTW Chur Roger Barras
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+abstract class local_evento_idanlasstyp {
+    const MODULANLASS = 3;
 }
