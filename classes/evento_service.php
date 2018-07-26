@@ -110,6 +110,8 @@ class local_evento_evento_service {
         !empty($limitationfilter2->themaxresultvalue) ? $request['theLimitationFilter2']['theMaxResultsValue'] = $limitationfilter2->themaxresultvalue : null;
         !empty($limitationfilter2->thefromdate) ? $request['theLimitationFilter2']['theFromDate'] = $limitationfilter2->thefromdate : null;
         !empty($limitationfilter2->thetodate) ? $request['theLimitationFilter2']['theToDate'] = $limitationfilter2->thetodate : null;
+        // Sort order.
+        !empty($limitationfilter2->sortfield) ? $request['theLimitationFilter2']['theSortField'] = $limitationfilter2->sortfield : null;
         $result = $this->client->listEventoAnlass($request);
 
         return array_key_exists("return", $result) ? $result->return : null;
@@ -347,6 +349,8 @@ class local_evento_limitationfilter2 {
     public $thetodate = null;
     /** @var int */
     public $themaxresultvalue = null;
+    /** @var string */
+    public $sortfield = null;
 }
 
 /**
