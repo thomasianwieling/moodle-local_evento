@@ -28,7 +28,7 @@ define('LOCAL_EVENTO_DATETIME_FORMAT', "Y-m-d\TH:i:s.uP");
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class local_evento_evento_service {
+class local_evento_evento_service  implements interface_evento_service {
     // Plugin configuration.
     private $config;
     private $client;
