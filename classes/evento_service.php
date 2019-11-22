@@ -342,7 +342,7 @@ class local_evento_eventoanlassfilter {
  * @copyright  2017 HTW Chur Roger Barras
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_evento_limitationfilter2 {
+class local_evento_limitationfilter2 implements interface_evento_limitationfilter2{
     /** @var string */
     public $thefromdate = null;
     /** @var string */
